@@ -2,6 +2,7 @@
   let ws;
   import { onMount, onDestroy } from "svelte";
   import { writable } from "svelte/store";
+  import { savedPrices, loadSavedPrices } from "./stores/savedPrices.js";
 
   // Reactive stores for price and thresholds
   const price = writable(null);
@@ -9,6 +10,8 @@
   const downThreshold = writable(null);
 
   onMount(() => {
+    loadSavedPrices();
+
     ws = new WebSocket("ws://localhost:3002");
 
     ws.onopen = () => console.log("🟢 WS connection opened");
@@ -44,29 +47,29 @@
     }
   });
 
-  // onMount(() => {
-  //   const ws = new WebSocket("ws://localhost:3002");
+  // Functionality
+  async function savePrice() {
+    if ($price === null) return;
+    await fetch("http://localhost:3002/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        price: $price,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+    // You could reload saved list here if implemented
+    await loadSavedPrices();
+  }
 
-  //   ws.addEventListener("message", ({ data }) => {
-  //     console.log("WS tick:", data);
-  //     const {
-  //       symbol,
-  //       price: latest,
-  //       upThreshold: up,
-  //       downThreshold: down,
-  //     } = JSON.parse(data);
-  //     if (symbol === "AAPL") {
-  //       if (!baseSet) {
-  //         baseSet = true;
-  //         upThreshold.set(up);
-  //         downThreshold.set(down);
-  //       }
-  //       price.set(latest);
-  //     }
-  //   });
-
-  //   return () => ws.close();
-  // });
+  async function deleteSaved(id) {
+    const res = await fetch(`http://localhost:3002/saved/${id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      loadSavedPrices(); // refresh the list
+    }
+  }
 </script>
 
 <div class="banner">
@@ -98,7 +101,20 @@
       ↓ …
     {/if}
   </div>
+  <button on:click={savePrice}>Save Price</button>
 </div>
+
+<aside class="sidebar">
+  <h2>Saved Prices</h2>
+  <ul>
+    {#each $savedPrices as item}
+      <li>
+        ${item.price} &mdash; {new Date(item.timestamp).toLocaleString()}
+        <button on:click={() => deleteSaved(item._id)}>×</button>
+      </li>
+    {/each}
+  </ul>
+</aside>
 
 <style>
   .banner {
