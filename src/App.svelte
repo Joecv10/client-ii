@@ -72,75 +72,114 @@
   }
 </script>
 
-<div class="banner">
-  <h1>Demo de Invocación Implícita Grupo 1</h1>
-</div>
-
-<div class="ticker">
-  <div class="price">
-    AAPL:
-    {#if $price !== null}
-      ${$price.toFixed(2)}
-    {:else}
-      Loading...
-    {/if}
+<!-- page wrapper -->
+<main class="min-h-screen bg-gray-950 flex flex-col items-center gap-12 py-12">
+  <div
+    class="banner bg-gray-900 text-white sticky top-0 p-4 flex justify-center items-center"
+  >
+    <h1 class="text-3xl md:text-4xl font-bold">
+      <span class="text-yellow-400">Demo</span> de Invocación Implícita Grupo 1
+    </h1>
   </div>
 
-  <div class="threshold">
-    {#if $upThreshold !== null}
-      ↑ ${$upThreshold.toFixed(2)}
-    {:else}
-      ↑ …
-    {/if}
-  </div>
+  <!-- ticker card goes here -->
 
-  <div class="threshold">
-    {#if $downThreshold !== null}
-      ↓ ${$downThreshold.toFixed(2)}
-    {:else}
-      ↓ …
-    {/if}
-  </div>
-  <button on:click={savePrice}>Save Price</button>
-</div>
+  <!-- ticker -->
+  <!-- ticker card -->
+  <div
+    class="w-full max-w-xs bg-gray-900 border border-gray-700 rounded-xl p-6 text-white"
+  >
+    <div class="flex items-start gap-4">
+      <!-- Price block -->
+      <div class="text-4xl font-extrabold flex items-baseline gap-1">
+        <span>AAPL</span>
+        <span class="text-gray-500 text-xl">:</span>
+        {#if $price !== null}
+          <span>${$price.toFixed(2)}</span>
+        {:else}
+          <span class="text-gray-400 text-xl">Loading…</span>
+        {/if}
+      </div>
+    </div>
 
-<aside class="sidebar">
-  <h2>Saved Prices</h2>
-  <ul>
-    {#each $savedPrices as item}
-      <li>
-        ${item.price} &mdash; {new Date(item.timestamp).toLocaleString()}
-        <button on:click={() => deleteSaved(item._id)}>×</button>
-      </li>
-    {/each}
-  </ul>
-</aside>
+    <!-- Thresholds -->
+    <div class="mt-4 flex flex-col gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-green-400 text-lg">↑</span>
+        {#if $upThreshold !== null}
+          <span class="text-lg">${$upThreshold.toFixed(2)}</span>
+        {:else}
+          <span class="text-gray-400">…</span>
+        {/if}
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-red-400 text-lg">↓</span>
+        {#if $downThreshold !== null}
+          <span class="text-lg">${$downThreshold.toFixed(2)}</span>
+        {:else}
+          <span class="text-gray-400">…</span>
+        {/if}
+      </div>
+    </div>
+
+    <!-- Save button -->
+    <button
+      class="mt-6 w-full rounded-lg bg-yellow-500 hover:bg-yellow-400 py-2 text-gray-900 font-semibold transition"
+      on:click={savePrice}
+    >
+      Save Price
+    </button>
+  </div>
+  <!-- ticker -->
+
+  <!-- data-table card goes here -->
+  <!-- data-table card -->
+  <aside
+    class="w-full max-w-2xl rounded-xl bg-gray-900 shadow
+         overflow-hidden"
+  >
+    <!-- header row -->
+    <div
+      class="grid grid-cols-12 gap-6 px-6 py-4
+           text-sm font-semibold text-gray-200
+           bg-gray-800"
+    >
+      <span class="col-span-4">PRICE</span>
+      <span class="col-span-6">TIMESTAMP</span>
+      <span class="col-span-2 text-center">ACTION</span>
+    </div>
+
+    <!-- scrollable body -->
+    <div class="max-h-64 overflow-y-auto">
+      {#each $savedPrices as item (item._id)}
+        <div
+          class="grid grid-cols-12 gap-6 px-6 py-4 text-sm
+               odd:bg-gray-800 even:bg-gray-700
+               text-gray-100"
+        >
+          <div class="col-span-4 font-medium">
+            $ {item.price.toFixed(2)}
+          </div>
+
+          <div class="col-span-6 text-gray-300">
+            {new Date(item.timestamp).toLocaleString()}
+          </div>
+
+          <div class="col-span-2 flex justify-center">
+            <button
+              class="rounded-md bg-red-600/40 px-3 py-1 text-red-200
+                   hover:bg-red-600 hover:text-white transition"
+              on:click={() => deleteSaved(item._id)}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      {/each}
+    </div>
+  </aside>
+</main>
 
 <style>
-  .banner {
-    position: sticky;
-    top: 0;
-    background-color: white;
-    color: black;
-    z-index: 1000;
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .ticker {
-    font-family: system-ui, sans-serif;
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin: 2rem;
-  }
-  .price {
-    font-size: 2rem;
-    font-weight: bold;
-  }
-  .threshold {
-    opacity: 0.7;
-  }
 </style>
